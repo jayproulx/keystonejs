@@ -26,11 +26,11 @@
 	 * Base can also be used as a base class for non-Keystone classes.  Please also feel free to extend other Keystone
 	 * classes, as they all inherit this method.
 	 *
-	 * @type {Function}
+	 * @type {Class}
 	 */
 	var Base = Keystone.Base = function()
 	{
-
+		return this;
 	};
 
 	/**
@@ -80,7 +80,7 @@
 				events = events.split( EventDispatcher.SPLIT_ON );
 				this.callbacks = this.callbacks || {};
 
-				var event, callbacks, last, cb;
+				var event, callbacks;
 				while( event = events.shift() )
 				{
 					callbacks = this.callbacks[event] = this.callbacks[event] || [];
@@ -107,7 +107,7 @@
 
 				var callbacks, event, cb, idx;
 
-				events = events ? events.split( EventDispatcher.SPLIT_ON ) : this.callbackEvents( callbacks );
+				events = events ? events.split( EventDispatcher.SPLIT_ON ) : this.callbackEvents( this.callbacks );
 
 				while( event = events.shift() )
 				{
@@ -178,6 +178,7 @@
 	/**
 	 * Make Keystone Require.js / AMD friendly.
 	 */
+	var define;
 	if( define && typeof define == "function" )
 	{
 		define( "Keystone", [], function()
@@ -186,4 +187,4 @@
 		} );
 	}
 
-})( this );
+})( window );
