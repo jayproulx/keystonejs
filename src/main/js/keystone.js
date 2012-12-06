@@ -1,3 +1,4 @@
+/*jslint plusplus: true, vars: true, white: true */
 /**
  * Welcome to Keystone!
  *
@@ -17,16 +18,20 @@
  */
 (function( root )
 {
+	'use strict';
+
 	if( !root.Keystone )
 	{
 		root.Keystone = {};
 	}
 
+	var Keystone = root.Keystone;
+
 	/**
 	 * Base can also be used as a base class for non-Keystone classes.  Please also feel free to extend other Keystone
 	 * classes, as they all inherit this method.
 	 *
-	 * @type {Class}
+	 * @type {function}
 	 */
 	var Base = Keystone.Base = function()
 	{
@@ -46,10 +51,69 @@
 	 * @param staticProperties (optional) Properties or methods that will be applied directly to the class
 	 * @param localProperties Properties or methods that will be added to the prototype
 	 */
-		// TODO: Implement this method
 	Base.extend = function( staticProperties, localProperties )
 	{
-		localProperties = arguments.length == 1 ? staticProperties : localProperties;
+		localProperties = arguments.length === 1 ? staticProperties : localProperties;
+
+		var parent = this;
+		var child;
+
+		// The constructor function for the new subclass is either defined by you
+		// (the "constructor" property in your `extend` definition), or defaulted
+		// by us to simply call the parent's constructor.
+		if( localProperties && localProperties.hasOwnProperty( 'constructor' ) )
+		{
+			child = localProperties.constructor;
+		}
+		else
+		{
+			child = function()
+			{
+				parent.apply( this, arguments );
+			};
+		}
+
+		function ext( obj )
+		{
+			arguments.slice( 1 ).forEach( function( source )
+			{
+				var prop;
+
+				if( source )
+				{
+					for( prop in source )
+					{
+						obj[prop] = source[prop];
+					}
+				}
+			} );
+
+			return obj;
+		}
+
+		// Add static properties to the constructor function, if supplied.
+		ext( child, parent, staticProperties );
+
+		// Set the prototype chain to inherit from `parent`, without calling
+		// `parent`'s constructor function.
+		var Surrogate = function()
+		{
+			this.constructor = child;
+		};
+
+		Surrogate.prototype = parent.prototype;
+		child.prototype = new Surrogate();
+
+		// Add prototype properties (instance properties) to the subclass, if supplied.
+		if( localProperties )
+		{
+			ext( child.prototype, localProperties );
+		}
+
+		// Set a convenience property in case the parent's prototype is needed later.
+		child.__super__ = parent.prototype;
+
+		return child;
 	};
 
 	/**
@@ -75,7 +139,10 @@
 			 */
 			on: function( events, callback, context )
 			{
-				if( !callback ) return this;
+				if( !callback )
+				{
+					return this;
+				}
 
 				events = events.split( EventDispatcher.SPLIT_ON );
 				this.callbacks = this.callbacks || {};
@@ -101,7 +168,7 @@
 			 * @param context Object
 			 * @return {Keystone.EventDispatcher}
 			 */
-			off: function( events, callback, context )
+			off    : function( events, callback, context )
 			{
 				if( !this.callbacks )
 				{
@@ -123,7 +190,10 @@
 				{
 					callbacks = this.callbacks[event];
 
-					if( !callbacks ) continue;
+					if( !callbacks )
+					{
+						continue;
+					}
 
 					// if we have an event, but no callback or context, remove all callbacks for this event
 					if( callbacks && !callback && !context )
@@ -148,7 +218,7 @@
 
 			},
 
-			// TODO: Implement trigger
+			//TODO: Implement trigger
 			trigger: function()
 			{
 
@@ -189,7 +259,7 @@
 	 * Make Keystone Require.js / AMD friendly.
 	 */
 	var define;
-	if( define && typeof define == "function" )
+	if( define && typeof define === "function" )
 	{
 		define( "Keystone", [], function()
 		{
@@ -197,4 +267,4 @@
 		} );
 	}
 
-})( window );
+}( window ));
