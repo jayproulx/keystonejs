@@ -75,9 +75,10 @@
 
 		function ext( obj )
 		{
-			arguments.slice( 1 ).forEach( function( source )
+			var i;
+			for(i = 1; i < arguments.length; i++)
 			{
-				var prop;
+				var prop, source = arguments[i];
 
 				if( source )
 				{
@@ -86,7 +87,7 @@
 						obj[prop] = source[prop];
 					}
 				}
-			} );
+			}
 
 			return obj;
 		}
@@ -258,7 +259,7 @@
 	/**
 	 * Make Keystone Require.js / AMD friendly.
 	 */
-	var define;
+	// var define;
 	if( define && typeof define === "function" )
 	{
 		define( "Keystone", [], function()
