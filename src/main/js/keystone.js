@@ -68,9 +68,9 @@
 			 * Add a callback for (a) specific event(s) to this event dispatcher.  Listen to multiple events with the
 			 * same callback by stringing the events together separated by spaces.
 			 *
-			 * @param events String multiple events can be separated by a space to add multiple callbacks.
+			 * @param events String, multiple events can be separated by a space to add multiple callbacks.
 			 * @param callback Function
-			 * @param context Object "this" when callback is executed.
+			 * @param context Object, "this" when callback is executed.
 			 * @return {Keystone.EventDispatcher}
 			 */
 			on: function( events, callback, context )
@@ -91,6 +91,16 @@
 				return this;
 			},
 
+			/**
+			 * Remove a callback for (a) specific event(s) from this event dispatcher.  An undefined argument indicates
+			 * that you would like to match the other arguments inclusively. If all three arguments are undefined, remove
+			 * all event listeners.
+			 *
+			 * @param events String, multiple events can be separated by a space to remove multiple events
+			 * @param callback Function
+			 * @param context Object
+			 * @return {Keystone.EventDispatcher}
+			 */
 			off: function( events, callback, context )
 			{
 				if( !this.callbacks )
