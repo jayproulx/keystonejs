@@ -119,6 +119,22 @@
 	/**
 	 * EventDispatcher is a lightweight event dispatcher that can send messages between loosely coupled code.
 	 *
+	 * The difference here from other libraries is that we support only one style of adding, removing and triggering
+	 * events, not trying to be compatible with all other libraries.
+	 *
+	 * Adding an event listener:
+	 * Add as many events separated by spaces as you like to assign to the specified callback.
+	 * {EventDispatcher}.on('event1... ...event2', callback, context);
+	 *
+	 * Removing an event listener
+	 * An undefined argument matches the other arguments inclusively.  Arguments are for filtering.
+	 * {EventDispatcher}.off('event1... ...event2', callback, context);
+	 *
+	 * Triggering an event:
+	 * The first argument is the event type, all other arguments are optional, and all arguments are passed to the
+	 * callback.
+	 * {EventDispatcher}.trigger('event', [arguments]);
+	 *
 	 * @type {Keystone.EventDispatcher}
 	 */
 	var EventDispatcher = Keystone.EventDispatcher = Base.extend(
@@ -133,7 +149,7 @@
 			 * same callback by stringing the events together separated by spaces.
 			 *
 			 * @param events String, multiple events can be separated by a space to add multiple callbacks.
-			 * @param callback Function
+			 * @param callback Function function(type, arg1...argn)
 			 * @param context Object, "this" when callback is executed.
 			 * @return {Keystone.EventDispatcher}
 			 */
@@ -164,11 +180,11 @@
 			 * all event listeners.
 			 *
 			 * @param events String, multiple events can be separated by a space to remove multiple events
-			 * @param callback Function
+			 * @param callback Function function(type, arg1...argn)
 			 * @param context Object
 			 * @return {Keystone.EventDispatcher}
 			 */
-			off    : function( events, callback, context )
+			off: function( events, callback, context )
 			{
 				if( !this.callbacks )
 				{
@@ -218,10 +234,35 @@
 
 			},
 
-			//TODO: Implement trigger
-			trigger: function()
+			/**
+			 * Run all callbacks where 'this' is defined by the context defined when calling 'on()'.  The first
+			 * parameter is the type of event to dispatch.  All arguments are sent to each callback.
+			 *
+			 * Callbacks listening to 'all' will also be triggered.
+			 *
+			 * Callbacks should be in the format function(type, arg1...argn).
+			 *
+			 * @param type Event type
+			 * @return {*}
+			 */
+			trigger: function( type )
 			{
+				if( !this.callbacks )
+				{
+					return this;
+				}
 
+				var cb, i = -1, callbacks = this.callbacks[type], l = callbacks.length;
+				callbacks.concat(this.callbacks['all']);
+
+				while(++i < l)
+				{
+					cb = callbacks[i];
+					// arguments.slice will return a new array rather than the "arguments" object with caller/callee
+					cb.callback.apply(cb.context, arguments.slice(0));
+				}
+
+				return this;
 			},
 
 			callbackEvents: function( callbacks )
@@ -245,15 +286,6 @@
 
 		}
 	);
-
-	/**
-	 *
-	 *
-	 * @type {Keystone.ModelBase}
-	 */
-	var ModelBase = Keystone.ModelBase = Base.extend( {
-
-	} );
 
 	/**
 	 * Make Keystone Require.js / AMD friendly.
